@@ -56,7 +56,7 @@ sudo systemctl restart containerd
 sudo systemctl enable containerd
 ```
 
-Kube* installation and config
+Kube\* installation and config
 
 ```sh
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -86,6 +86,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 To finish up, add a label that will help identifying the master
+
 ```sh
 kubectl label nodes k8s-worker-1 master=01
 ```
@@ -107,45 +108,64 @@ Add a line similar to the following to your /etc/hosts if you have the same issu
 ```
 
 To finish up, add a label that will help identifying the worker
+
 ```sh
 kubectl label nodes k8s-worker-1 worker=01
 ```
 
 ---
+
 ## Setting up cluster network
+
 For this part we will be using the calico network plugin.
+
 ```sh
 curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
 kubectl apply -f calico.yaml
 ```
+
 Once the plugin has been applied, watch the pods starting up! After a while, they should all be:
+
 - READY (1/1)
 - STATUS (Running)
 
 ```sh
 watch kubectl get pods -n kube-system
 ```
-The cluster in healthy only when they are all 
+
+The cluster in healthy only when they are all
+
 - STATUS (Ready)
+
 ```sh
 kubectl get nodes
 ```
+
 ---
+
 ## Testing out the cluster
+
 To make sure everything is fine, we will make make a simple nginx server that will be exposed by a node port service
+
 ```sh
 kubectl create deployment nginx-app --image=nginx --replicas=1
 ```
+
 Should see a deployment that is up and running
+
 ```sh
 kubectl get deployment nginx-app
 ```
+
 Afterwards, expose a port by making a **NodePort** service
+
 ```sh
 kubectl expose deployment nginx-app --type=NodePort --port=80
 ```
+
 describe the service and attempt to load the service from outside of the cluster via the outbound port.
 Once you confirm it is good, you can remove the added deployment and service
+
 ```sh
 kubectl delete deployment nginx-app
 kubectl delete svc nginx-app
