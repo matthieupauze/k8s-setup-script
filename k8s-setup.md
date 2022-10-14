@@ -69,9 +69,9 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 ## This is where the installations differ
 
-### Commands run on Master VM
+### Commands run on **Master** VM
 
-The hostname here will depened on your specific setup, use the `hostname` command to get the correct value.
+The hostname here will depend on your specific setup, use the `hostname` command to get the correct value.
 
 ```sh
 sudo kubeadm init --control-plane-endpoint=$(hostname)
@@ -85,7 +85,12 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-### Commands run on Worker VM
+To finish up, add a label that will help identifying the master
+```sh
+kubectl label nodes k8s-worker-1 master=01
+```
+
+### Commands run on **Worker** VM
 
 At this point the Master should spit out a join string of some sort, go ahead and copy that command into your worker.
 
@@ -99,4 +104,49 @@ Add a line similar to the following to your /etc/hosts if you have the same issu
 
 ```sh
 10.1.1.21 k8s-master
+```
+
+To finish up, add a label that will help identifying the worker
+```sh
+kubectl label nodes k8s-worker-1 worker=01
+```
+
+---
+## Setting up cluster network
+For this part we will be using the calico network plugin.
+```sh
+curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
+kubectl apply -f calico.yaml
+```
+Once the plugin has been applied, watch the pods starting up! After a while, they should all be:
+- READY (1/1)
+- STATUS (Running)
+
+```sh
+watch kubectl get pods -n kube-system
+```
+The cluster in healthy only when they are all 
+- STATUS (Ready)
+```sh
+kubectl get nodes
+```
+---
+## Testing out the cluster
+To make sure everything is fine, we will make make a simple nginx server that will be exposed by a node port service
+```sh
+kubectl create deployment nginx-app --image=nginx --replicas=1
+```
+Should see a deployment that is up and running
+```sh
+kubectl get deployment nginx-app
+```
+Afterwards, expose a port by making a **NodePort** service
+```sh
+kubectl expose deployment nginx-app --type=NodePort --port=80
+```
+describe the service and attempt to load the service from outside of the cluster via the outbound port.
+Once you confirm it is good, you can remove the added deployment and service
+```sh
+kubectl delete deployment nginx-app
+kubectl delete svc nginx-app
 ```
