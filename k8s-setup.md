@@ -100,7 +100,7 @@ kubeadm join k8s-master:6443 --token ai45wx.hoo4va2l9arozaxu \
         --discovery-token-ca-cert-hash sha256:3c979ddd77ccf4e12cbbe7ec46585786a47477dc5ea614e8f3a47cce51d7f569
 ```
 
-In our case, since we setup the control-plane/master using it's hostname, we needed to configure the worker with it's IP address.
+In our case, since we setup the control-plane/master using it's hostname, we needed to insert the hostname into the worker's /etc/hosts file.
 Add a line similar to the following to your /etc/hosts if you have the same issue
 
 ```sh
@@ -117,14 +117,14 @@ kubectl label nodes k8s-worker-1 worker=01
 
 ## Setting up cluster network
 
-For this part we will be using the calico network plugin.
+Kubernetes requires a network overlay in order to allow communication between pods and services.
+To satisfy this, we will be using the calico network plugin.
 
 ```sh
-curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
-kubectl apply -f calico.yaml
+kubectl apply -f https://projectcalico.docs.tigera.io/manifests/calico.yaml
 ```
 
-Once the plugin has been applied, watch the pods starting up! After a while, they should all be:
+Once the plugin has been applied, watch the pods start up! After a while, they should all be:
 
 - READY (1/1)
 - STATUS (Running)
@@ -133,7 +133,7 @@ Once the plugin has been applied, watch the pods starting up! After a while, the
 watch kubectl get pods -n kube-system
 ```
 
-The cluster in healthy only when they are all
+The cluster is healthy when they are all
 
 - STATUS (Ready)
 
@@ -157,16 +157,29 @@ Should see a deployment that is up and running
 kubectl get deployment nginx-app
 ```
 
-Afterwards, expose a port by making a **NodePort** service
+To test communication with the service, expose it as a **NodePort** service
 
 ```sh
 kubectl expose deployment nginx-app --type=NodePort --port=80
 ```
 
-describe the service and attempt to load the service from outside of the cluster via the outbound port.
-Once you confirm it is good, you can remove the added deployment and service
+Describe the service and attempt to load the service from outside of the cluster via the exposed port and it's ip.
+
+Once you've confirmed you can communication with it, remove the added deployment and service.
 
 ```sh
 kubectl delete deployment nginx-app
 kubectl delete svc nginx-app
+```
+
+---
+
+## Tips
+
+If anything goes wrong and you need to investigate the current state of your pod, you can use the `kubectl describe svc/nginx-app` and `kubectl edit svc/nginx-app` command to look at the current config applied to the service and change it to get it working.
+
+By default, kubectl uses vim. If you'd prefer to use nano or another editor, you'll need to modify the KUBE_EDITOR environment variable. You can also make this change permanent by adding the following line to the bottom of the .bashrc file in your home.
+
+```sh
+export KUBE_EDITOR="nano"
 ```
