@@ -43,7 +43,16 @@ ArgoCD will generate a default secure password that you will be forced to output
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
 
-login within the webpage onto 
+login within the webpage with the credentials:
+```
+username: admin
+password: $(output of previous command)
+```
+
+**PLEASE CHANGE YOUR PASSWORD**
+
+![change password](images/argo-cd/change-password.jpg)
+
 
 ---
 # With a configured ingress controller
