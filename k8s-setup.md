@@ -1,19 +1,21 @@
 # K8s setup
 
-Big kudos to [LinuxTechi.com](https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/) for their great guide.
+Thanks to [LinuxTechi.com](https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/) for their great guide.
 
-## This is a trace of the commands in the exact order that they were run during our proof of concept setup
+---
 
-These first few commands must be run on both the Master as well as the Worker machines for installing all of their base dependencies
+## Shared setup for Master and all Worker machines
 
-These commands will disable the file system swap files if there are any on your machines
+These first few commands must be run on both the Master as well as the Worker machines for installing all of their base dependencies.
+
+Kubernetes has a strict requirement for disabling system swap files.
 
 ```sh
 sudo swapoff -a
 sudo sed -i '/^[^#]/ s/\(^.*swap.*$\)/#\1/' /etc/fstab
 ```
 
-Config
+Containerd and iptables Config
 
 ```sh
 sudo tee /etc/modules-load.d/containerd.conf <<EOF
@@ -45,7 +47,7 @@ sudo apt install -y curl gnupg2 software-properties-common apt-transport-https c
 sudo apt install -y containerd.io
 ```
 
-Containerd config
+More Containerd config
 
 ```sh
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
@@ -67,7 +69,9 @@ sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
-## This is where the installations differ
+---
+
+## This is where Master/Worker installations differ
 
 ### Commands run on **Master** VM
 

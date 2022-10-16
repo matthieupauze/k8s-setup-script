@@ -1,3 +1,5 @@
+# TODO: Refactor this to follow the commands from the other documents, in the exact order in which they should be applied 
+
 #! /etc/bash
 sudo swapoff -a
 sudo sed -i '/^[^#]/ s/\(^.*swap.*$\)/#\1/' /etc/fstab

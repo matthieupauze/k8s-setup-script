@@ -73,3 +73,5 @@ password: $(output of previous command)
 ## Setup with ingress controller
 
 As you might have seen, ArgoCD is configured with a **NodePort** service after being configured, we don't necessarly want to expose a weird port and we would want to support ssl. This is why we will move the current **NodePort** into a **ClusterIP**.
+
+TODO Complete missing details
